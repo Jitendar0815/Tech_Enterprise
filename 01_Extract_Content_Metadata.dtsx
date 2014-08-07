@@ -1,0 +1,842 @@
+<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="1/30/2025 12:00:00 PM"
+  DTS:CreatorComputerName="ENTERPRISE-SERVER"
+  DTS:CreatorName="SSIS Developer"
+  DTS:DTSID="{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="16.0.5035.3"
+  DTS:LocaleID="1033"
+  DTS:ObjectName="01_Extract_Content_Metadata"
+  DTS:PackageType="5"
+  DTS:VersionBuild="1"
+  DTS:VersionGUID="{B2C3D4E5-F6G7-8901-BCDE-F23456789012}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:Variables>
+    <DTS:Variable
+      DTS:CreationName=""
+      DTS:DTSID="{C3D4E5F6-G7H8-9012-CDEF-345678901234}"
+      DTS:IncludeInDebugDump="6789"
+      DTS:Namespace="User"
+      DTS:ObjectName="ContentAPIEndpoint">
+      <DTS:VariableValue
+        DTS:DataType="8">https://api.contentmanagement.com/v1</DTS:VariableValue>
+    </DTS:Variable>
+    <DTS:Variable
+      DTS:CreationName=""
+      DTS:DTSID="{D4E5F6G7-H8I9-0123-DEF0-456789012345}"
+      DTS:IncludeInDebugDump="2345"
+      DTS:Namespace="User"
+      DTS:ObjectName="BatchSize">
+      <DTS:VariableValue
+        DTS:DataType="3">10000</DTS:VariableValue>
+    </DTS:Variable>
+    <DTS:Variable
+      DTS:CreationName=""
+      DTS:DTSID="{E5F6G7H8-I9J0-1234-EF01-567890123456}"
+      DTS:IncludeInDebugDump="6789"
+      DTS:Namespace="User"
+      DTS:ObjectName="LastExtractDate">
+      <DTS:VariableValue
+        DTS:DataType="7">1/1/1900 12:00:00 AM</DTS:VariableValue>
+    </DTS:Variable>
+  </DTS:Variables>
+  <DTS:Executables>
+    <DTS:Executable
+      DTS:refId="Package\Data Flow Task - Extract Content Metadata"
+      DTS:CreationName="Microsoft.Pipeline"
+      DTS:Description="Extract content metadata from various sources"
+      DTS:DTSID="{F6G7H8I9-J0K1-2345-F012-678901234567}"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Data Flow Task - Extract Content Metadata"
+      DTS:TaskContact="Performs high-performance data extraction, transformation and loading">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <pipeline
+          version="1">
+          <components>
+            <component
+              refId="1"
+              componentClassID="Microsoft.OLEDBSource"
+              contactInfo="OLE DB Source;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;7"
+              description="OLE DB Source"
+              name="Content Management API Source"
+              usesDispositions="true"
+              version="7">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset"></property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand">
+-- Extract content metadata from staging table populated by REST API calls
+SELECT 
+    Source_System,
+    External_Content_ID,
+    Title,
+    Content_Type,
+    Genre,
+    Description,
+    Duration_Minutes,
+    Release_Date,
+    Production_Budget,
+    Content_Rating,
+    Language_Code,
+    Country_Code,
+    Director,
+    Producer,
+    Cast_List,
+    Keywords,
+    Thumbnail_URL,
+    Trailer_URL,
+    GETDATE() as Extract_Timestamp
+FROM STG.Content_Metadata_Staging 
+WHERE Processing_Status = 'Pending'
+  AND Created_Date >= ?
+ORDER BY Created_Date
+                </property>
+                <property
+                  dataType="System.String"
+                  description="The variable that contains the SQL command to be executed."
+                  name="SqlCommandVariable"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode">2</property>
+                <property
+                  dataType="System.String"
+                  description="The mappings between the parameters in the SQL command and variables."
+                  name="ParameterMapping">"Parameter0:Input",{E5F6G7H8-I9J0-1234-EF01-567890123456};</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="1"
+                  connectionManagerID="Package.ConnectionManagers[MediaEntertainmentDB]"
+                  connectionManagerRefId="Package.ConnectionManagers[MediaEntertainmentDB]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <outputs>
+                <output
+                  refId="1"
+                  name="OLE DB Source Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="1"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="1"
+                      length="100"
+                      lineageId="1"
+                      name="Source_System"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="2"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="2"
+                      length="200"
+                      lineageId="2"
+                      name="External_Content_ID"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="3"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="3"
+                      length="500"
+                      lineageId="3"
+                      name="Title"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="4"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="4"
+                      length="100"
+                      lineageId="4"
+                      name="Content_Type"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="5"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="5"
+                      length="100"
+                      lineageId="5"
+                      name="Genre"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="6"
+                      dataType="nText"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="6"
+                      lineageId="6"
+                      name="Description"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="7"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="7"
+                      lineageId="7"
+                      name="Duration_Minutes"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="8"
+                      dataType="dbDate"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="8"
+                      lineageId="8"
+                      name="Release_Date"
+                      truncationRowDisposition="FailComponent" />
+                  </outputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="1"
+                      dataType="wstr"
+                      length="100"
+                      name="Source_System" />
+                    <externalMetadataColumn
+                      refId="2"
+                      dataType="wstr"
+                      length="200"
+                      name="External_Content_ID" />
+                    <externalMetadataColumn
+                      refId="3"
+                      dataType="wstr"
+                      length="500"
+                      name="Title" />
+                    <externalMetadataColumn
+                      refId="4"
+                      dataType="wstr"
+                      length="100"
+                      name="Content_Type" />
+                    <externalMetadataColumn
+                      refId="5"
+                      dataType="wstr"
+                      length="100"
+                      name="Genre" />
+                    <externalMetadataColumn
+                      refId="6"
+                      dataType="nText"
+                      name="Description" />
+                    <externalMetadataColumn
+                      refId="7"
+                      dataType="i4"
+                      name="Duration_Minutes" />
+                    <externalMetadataColumn
+                      refId="8"
+                      dataType="dbDate"
+                      name="Release_Date" />
+                  </externalMetadataColumns>
+                </output>
+                <output
+                  refId="2"
+                  isErrorOut="true"
+                  name="OLE DB Source Error Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="1"
+                      dataType="wstr"
+                      length="100"
+                      lineageId="9"
+                      name="Source_System"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="2"
+                      dataType="i4"
+                      lineageId="10"
+                      name="ErrorCode"
+                      specialFlags="2" />
+                    <outputColumn
+                      refId="3"
+                      dataType="i4"
+                      lineageId="11"
+                      name="ErrorColumn"
+                      specialFlags="3" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="2"
+              componentClassID="Microsoft.ScriptComponentTransform"
+              contactInfo="Script Component;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;0"
+              description="Script Component"
+              name="Content Analytics Processor"
+              usesDispositions="true"
+              version="0">
+              <properties>
+                <property
+                  dataType="System.String"
+                  description="The script language."
+                  name="ScriptLanguage">Microsoft Visual C# 2019</property>
+                <property
+                  dataType="System.String"
+                  description="The script code."
+                  name="ScriptCode">
+using System;
+using System.Data;
+using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
+using Microsoft.SqlServer.Dts.Runtime.Wrapper;
+using System.Text.RegularExpressions;
+using System.Linq;
+
+[Microsoft.SqlServer.Dts.Pipeline.SSISScriptComponentEntryPointAttribute]
+public class ScriptMain : UserComponent
+{
+    public override void PreExecute()
+    {
+        base.PreExecute();
+    }
+
+    public override void PostExecute()
+    {
+        base.PostExecute();
+    }
+
+    public override void Input0_ProcessInputRow(Input0Buffer Row)
+    {
+        // Content quality scoring
+        Row.ContentQualityScore = CalculateContentQualityScore(Row);
+        
+        // Extract and clean metadata
+        Row.CleanedTitle = CleanTitle(Row.Title);
+        Row.ExtractedKeywords = ExtractKeywords(Row.Description);
+        Row.ContentCategory = CategorizeContent(Row.ContentType, Row.Genre);
+        
+        // Calculate content metrics
+        Row.EstimatedAudienceSize = EstimateAudienceSize(Row);
+        Row.ContentComplexityScore = CalculateComplexityScore(Row);
+        
+        // Set processing flags
+        Row.RequiresReview = RequiresManualReview(Row);
+        Row.ProcessingTimestamp = DateTime.Now;
+    }
+
+    private int CalculateContentQualityScore(Input0Buffer Row)
+    {
+        int score = 50; // Base score
+        
+        // Title quality
+        if (!string.IsNullOrEmpty(Row.Title) && Row.Title.Length > 10)
+            score += 10;
+        
+        // Description quality
+        if (!string.IsNullOrEmpty(Row.Description) && Row.Description.Length > 100)
+            score += 15;
+        
+        // Metadata completeness
+        if (!string.IsNullOrEmpty(Row.Genre)) score += 5;
+        if (!string.IsNullOrEmpty(Row.Director)) score += 5;
+        if (!string.IsNullOrEmpty(Row.Cast_List)) score += 5;
+        if (!string.IsNullOrEmpty(Row.Keywords)) score += 10;
+        
+        return Math.Min(100, score);
+    }
+
+    private string CleanTitle(string title)
+    {
+        if (string.IsNullOrEmpty(title)) return "";
+        
+        // Remove special characters and normalize
+        string cleaned = Regex.Replace(title, @"[^\w\s-]", "");
+        cleaned = Regex.Replace(cleaned, @"\s+", " ");
+        return cleaned.Trim();
+    }
+
+    private string ExtractKeywords(string description)
+    {
+        if (string.IsNullOrEmpty(description)) return "";
+        
+        // Simple keyword extraction (in production, use NLP libraries)
+        var words = description.Split(' ')
+            .Where(w => w.Length > 4)
+            .Take(10)
+            .ToArray();
+        
+        return string.Join(", ", words);
+    }
+
+    private string CategorizeContent(string contentType, string genre)
+    {
+        if (string.IsNullOrEmpty(contentType)) return "Unknown";
+        
+        // Categorize based on type and genre
+        if (contentType.Contains("Movie"))
+        {
+            if (!string.IsNullOrEmpty(genre))
+                return $"Movie - {genre}";
+            return "Movie - General";
+        }
+        
+        if (contentType.Contains("TV") || contentType.Contains("Series"))
+            return "Television";
+        
+        if (contentType.Contains("Documentary"))
+            return "Documentary";
+        
+        return contentType;
+    }
+
+    private int EstimateAudienceSize(Input0Buffer Row)
+    {
+        // Simple audience estimation algorithm
+        int baseSize = 1000;
+        
+        if (Row.ContentType.Contains("Movie")) baseSize = 50000;
+        if (Row.ContentType.Contains("TV")) baseSize = 25000;
+        if (Row.ContentType.Contains("Documentary")) baseSize = 10000;
+        
+        // Adjust based on genre popularity
+        if (!string.IsNullOrEmpty(Row.Genre))
+        {
+            if (Row.Genre.Contains("Action") || Row.Genre.Contains("Comedy"))
+                baseSize = (int)(baseSize * 1.5);
+            else if (Row.Genre.Contains("Drama"))
+                baseSize = (int)(baseSize * 1.2);
+        }
+        
+        return baseSize;
+    }
+
+    private int CalculateComplexityScore(Input0Buffer Row)
+    {
+        int complexity = 1; // Simple
+        
+        if (Row.Duration_Minutes > 120) complexity = 3; // Complex
+        else if (Row.Duration_Minutes > 60) complexity = 2; // Medium
+        
+        if (!string.IsNullOrEmpty(Row.Genre) && 
+            (Row.Genre.Contains("Sci-Fi") || Row.Genre.Contains("Fantasy")))
+            complexity += 1;
+        
+        return Math.Min(5, complexity);
+    }
+
+    private bool RequiresManualReview(Input0Buffer Row)
+    {
+        // Flag content that needs manual review
+        if (Row.ContentQualityScore < 60) return true;
+        if (string.IsNullOrEmpty(Row.Title)) return true;
+        if (string.IsNullOrEmpty(Row.Description)) return true;
+        
+        return false;
+    }
+}
+                </property>
+                <property
+                  dataType="System.String"
+                  description="The ReadOnlyVariables property."
+                  name="ReadOnlyVariables">User::BatchSize,User::ContentAPIEndpoint</property>
+                <property
+                  dataType="System.String"
+                  description="The ReadWriteVariables property."
+                  name="ReadWriteVariables"></property>
+              </properties>
+              <inputs>
+                <input
+                  refId="1"
+                  name="Input 0">
+                  <inputColumns>
+                    <inputColumn
+                      refId="1"
+                      cachedDataType="wstr"
+                      cachedLength="100"
+                      cachedName="Source_System"
+                      lineageId="1" />
+                    <inputColumn
+                      refId="2"
+                      cachedDataType="wstr"
+                      cachedLength="200"
+                      cachedName="External_Content_ID"
+                      lineageId="2" />
+                    <inputColumn
+                      refId="3"
+                      cachedDataType="wstr"
+                      cachedLength="500"
+                      cachedName="Title"
+                      lineageId="3" />
+                    <inputColumn
+                      refId="4"
+                      cachedDataType="wstr"
+                      cachedLength="100"
+                      cachedName="Content_Type"
+                      lineageId="4" />
+                    <inputColumn
+                      refId="5"
+                      cachedDataType="wstr"
+                      cachedLength="100"
+                      cachedName="Genre"
+                      lineageId="5" />
+                    <inputColumn
+                      refId="6"
+                      cachedDataType="nText"
+                      cachedName="Description"
+                      lineageId="6" />
+                    <inputColumn
+                      refId="7"
+                      cachedDataType="i4"
+                      cachedName="Duration_Minutes"
+                      lineageId="7" />
+                    <inputColumn
+                      refId="8"
+                      cachedDataType="dbDate"
+                      cachedName="Release_Date"
+                      lineageId="8" />
+                  </inputColumns>
+                  <externalMetadataColumns />
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="1"
+                  name="Output 0"
+                  synchronousInputId="1">
+                  <outputColumns>
+                    <outputColumn
+                      refId="1"
+                      dataType="i4"
+                      lineageId="12"
+                      name="ContentQualityScore" />
+                    <outputColumn
+                      refId="2"
+                      dataType="wstr"
+                      length="500"
+                      lineageId="13"
+                      name="CleanedTitle" />
+                    <outputColumn
+                      refId="3"
+                      dataType="wstr"
+                      length="1000"
+                      lineageId="14"
+                      name="ExtractedKeywords" />
+                    <outputColumn
+                      refId="4"
+                      dataType="wstr"
+                      length="100"
+                      lineageId="15"
+                      name="ContentCategory" />
+                    <outputColumn
+                      refId="5"
+                      dataType="i4"
+                      lineageId="16"
+                      name="EstimatedAudienceSize" />
+                    <outputColumn
+                      refId="6"
+                      dataType="i4"
+                      lineageId="17"
+                      name="ContentComplexityScore" />
+                    <outputColumn
+                      refId="7"
+                      dataType="bool"
+                      lineageId="18"
+                      name="RequiresReview" />
+                    <outputColumn
+                      refId="8"
+                      dataType="dbTimeStamp"
+                      lineageId="19"
+                      name="ProcessingTimestamp" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="3"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="OLE DB Destination;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;4"
+              description="OLE DB Destination"
+              name="Content Master Destination"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset">[Media].[Content_Master]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode">3</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the batch size for inserts."
+                  name="BatchSize">10000</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Determines whether to check constraints."
+                  name="CheckConstraints">true</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Determines whether to fire triggers."
+                  name="FireTriggers">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Determines whether to keep identity values."
+                  name="KeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Determines whether to keep nulls."
+                  name="KeepNulls">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Determines whether to lock the table."
+                  name="TableLock">true</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="3"
+                  connectionManagerID="Package.ConnectionManagers[MediaEntertainmentDB]"
+                  connectionManagerRefId="Package.ConnectionManagers[MediaEntertainmentDB]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="1"
+                  hasSideEffects="true"
+                  name="OLE DB Destination Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="1"
+                      cachedDataType="wstr"
+                      cachedLength="500"
+                      cachedName="Title"
+                      externalMetadataColumnId="1"
+                      lineageId="3" />
+                    <inputColumn
+                      refId="2"
+                      cachedDataType="wstr"
+                      cachedLength="100"
+                      cachedName="Content_Type"
+                      externalMetadataColumnId="2"
+                      lineageId="4" />
+                    <inputColumn
+                      refId="3"
+                      cachedDataType="wstr"
+                      cachedLength="100"
+                      cachedName="Genre"
+                      externalMetadataColumnId="3"
+                      lineageId="5" />
+                    <inputColumn
+                      refId="4"
+                      cachedDataType="nText"
+                      cachedName="Description"
+                      externalMetadataColumnId="4"
+                      lineageId="6" />
+                    <inputColumn
+                      refId="5"
+                      cachedDataType="i4"
+                      cachedName="Duration_Minutes"
+                      externalMetadataColumnId="5"
+                      lineageId="7" />
+                    <inputColumn
+                      refId="6"
+                      cachedDataType="dbDate"
+                      cachedName="Release_Date"
+                      externalMetadataColumnId="6"
+                      lineageId="8" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="1"
+                      dataType="wstr"
+                      length="500"
+                      name="Title" />
+                    <externalMetadataColumn
+                      refId="2"
+                      dataType="wstr"
+                      length="100"
+                      name="Content_Type" />
+                    <externalMetadataColumn
+                      refId="3"
+                      dataType="wstr"
+                      length="100"
+                      name="Genre" />
+                    <externalMetadataColumn
+                      refId="4"
+                      dataType="nText"
+                      name="Description" />
+                    <externalMetadataColumn
+                      refId="5"
+                      dataType="i4"
+                      name="Duration_Minutes" />
+                    <externalMetadataColumn
+                      refId="6"
+                      dataType="dbDate"
+                      name="Release_Date" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+            </component>
+          </components>
+          <paths>
+            <path
+              refId="1"
+              endId="2"
+              name="OLE DB Source Output"
+              startId="1" />
+            <path
+              refId="2"
+              endId="3"
+              name="Script Component Output"
+              startId="2" />
+          </paths>
+        </pipeline>
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\Execute SQL Task - Log Package Execution"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:Description="Log package execution details"
+      DTS:DTSID="{G7H8I9J0-K1L2-3456-0123-789012345678}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Execute SQL Task - Log Package Execution">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{H8I9J0K1-L2M3-4567-1234-890123456789}"
+          SQLTask:SqlStatementSource="
+INSERT INTO LOG.ETL_Process_Log 
+(Process_Name, Package_Name, Start_Time, Status, Records_Processed)
+VALUES 
+('Content Metadata Extract', '01_Extract_Content_Metadata', GETDATE(), 'Running', 0)
+          "
+          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+  </DTS:Executables>
+  <DTS:PrecedenceConstraints>
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Constraint]"
+      DTS:CreationName=""
+      DTS:DTSID="{I9J0K1L2-M3N4-5678-2345-901234567890}"
+      DTS:From="Package\Execute SQL Task - Log Package Execution"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Constraint"
+      DTS:To="Package\Data Flow Task - Extract Content Metadata" />
+  </DTS:PrecedenceConstraints>
+  <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
+<Objects Version="8">
+  <DTS:Property DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <Package design-time-name="Package">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph">
+        <NodeLayout
+          Size="259,42"
+          Id="Package\Execute SQL Task - Log Package Execution"
+          TopLeft="100,50" />
+        <NodeLayout
+          Size="289,42"
+          Id="Package\Data Flow Task - Extract Content Metadata"
+          TopLeft="85,150" />
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Constraint]"
+          TopLeft="229,92">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,58"
+              Start="0,0"
+              End="0,50.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,50.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </Package>
+</Objects>]]></DTS:DesignTimeProperties>
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[MediaEntertainmentDB]"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{J0K1L2M3-N4O5-6789-3456-012345678901}"
+      DTS:ObjectName="MediaEntertainmentDB">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager>
+          <DTS:Property
+            DTS:Name="ConnectRetryCount">1</DTS:Property>
+          <DTS:Property
+            DTS:Name="ConnectRetryInterval">5</DTS:Property>
+          <DTS:Property
+            DTS:Name="ConnectionString">Data Source=@[$Project::DatabaseServer];Initial Catalog=@[$Project::DatabaseName];Provider=SQLNCLI11.1;Integrated Security=SSPI;Auto Translate=False;</DTS:Property>
+          <DTS:Property
+            DTS:Name="DelayValidation">False</DTS:Property>
+          <DTS:Property
+            DTS:Name="Retain">False</DTS:Property>
+        </DTS:ConnectionManager>
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+  <DTS:LogProviders />
+  <DTS:Configurations />
+  <DTS:EventHandlers />
+  <DTS:LogEntryInfos />
+</DTS:Executable>

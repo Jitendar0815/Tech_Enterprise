@@ -1,0 +1,736 @@
+<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="1/30/2025 12:00:00 PM"
+  DTS:CreatorComputerName="ENTERPRISE-SERVER"
+  DTS:CreatorName="SSIS Developer"
+  DTS:DTSID="{F6G7H8I9-J0K1-2345-F012-678901234567}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="16.0.5035.3"
+  DTS:LocaleID="1033"
+  DTS:ObjectName="06_Transform_Content_Analytics"
+  DTS:PackageType="5"
+  DTS:VersionBuild="1"
+  DTS:VersionGUID="{G7H8I9J0-K1L2-3456-0123-789012345678}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:Variables>
+    <DTS:Variable
+      DTS:CreationName=""
+      DTS:DTSID="{H8I9J0K1-L2M3-4567-1234-890123456789}"
+      DTS:IncludeInDebugDump="6789"
+      DTS:Namespace="User"
+      DTS:ObjectName="AnalysisDate">
+      <DTS:VariableValue
+        DTS:DataType="7">1/30/2025 12:00:00 AM</DTS:VariableValue>
+    </DTS:Variable>
+  </DTS:Variables>
+  <DTS:Executables>
+    <DTS:Executable
+      DTS:refId="Package\Data Flow Task - Content Performance Analysis"
+      DTS:CreationName="Microsoft.Pipeline"
+      DTS:Description="Transform and analyze content performance data"
+      DTS:DTSID="{I9J0K1L2-M3N4-5678-2345-901234567890}"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Data Flow Task - Content Performance Analysis"
+      DTS:TaskContact="Performs high-performance data extraction, transformation and loading">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <pipeline
+          version="1">
+          <components>
+            <component
+              refId="1"
+              componentClassID="Microsoft.OLEDBSource"
+              contactInfo="OLE DB Source;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;7"
+              description="OLE DB Source"
+              name="Content Consumption Source"
+              usesDispositions="true"
+              version="7">
+              <properties>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand">
+-- Aggregate content consumption data for analytics
+SELECT 
+    cc.ContentID,
+    cm.Title,
+    cm.ContentTypeID,
+    cm.GenreID,
+    cm.Duration_Minutes,
+    cm.Release_Date,
+    CAST(cc.Session_Start_Time AS DATE) as ViewingDate,
+    COUNT(DISTINCT cc.AudienceID) as UniqueViewers,
+    COUNT(*) as TotalSessions,
+    SUM(cc.Watch_Duration_Minutes) as TotalWatchTime,
+    AVG(cc.Watch_Duration_Minutes) as AvgWatchTime,
+    AVG(cc.Completion_Percentage) as AvgCompletionRate,
+    AVG(cc.Engagement_Score) as AvgEngagementScore,
+    AVG(cc.User_Rating) as AvgUserRating,
+    SUM(CASE WHEN cc.Completion_Percentage >= 90 THEN 1 ELSE 0 END) as CompletedViews,
+    SUM(CASE WHEN cc.Skip_Events > 0 THEN 1 ELSE 0 END) as SkippedSessions,
+    SUM(CASE WHEN cc.Buffer_Events > 3 THEN 1 ELSE 0 END) as BufferingIssues,
+    COUNT(DISTINCT cc.Device_Type) as DeviceVariety,
+    COUNT(DISTINCT cc.Geographic_Location) as GeographicReach
+FROM Media.Content_Consumption cc
+INNER JOIN Media.Content_Master cm ON cc.ContentID = cm.ContentID
+WHERE CAST(cc.Session_Start_Time AS DATE) = CAST(? AS DATE)
+GROUP BY 
+    cc.ContentID, cm.Title, cm.ContentTypeID, cm.GenreID, 
+    cm.Duration_Minutes, cm.Release_Date, CAST(cc.Session_Start_Time AS DATE)
+                </property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode">2</property>
+                <property
+                  dataType="System.String"
+                  description="The mappings between the parameters in the SQL command and variables."
+                  name="ParameterMapping">"Parameter0:Input",{H8I9J0K1-L2M3-4567-1234-890123456789};</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="1"
+                  connectionManagerID="Package.ConnectionManagers[MediaEntertainmentDB]"
+                  connectionManagerRefId="Package.ConnectionManagers[MediaEntertainmentDB]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <outputs>
+                <output
+                  refId="1"
+                  name="OLE DB Source Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="1"
+                      dataType="i8"
+                      lineageId="1"
+                      name="ContentID" />
+                    <outputColumn
+                      refId="2"
+                      dataType="wstr"
+                      length="500"
+                      lineageId="2"
+                      name="Title" />
+                    <outputColumn
+                      refId="3"
+                      dataType="i4"
+                      lineageId="3"
+                      name="ContentTypeID" />
+                    <outputColumn
+                      refId="4"
+                      dataType="i4"
+                      lineageId="4"
+                      name="GenreID" />
+                    <outputColumn
+                      refId="5"
+                      dataType="i4"
+                      lineageId="5"
+                      name="Duration_Minutes" />
+                    <outputColumn
+                      refId="6"
+                      dataType="dbDate"
+                      lineageId="6"
+                      name="Release_Date" />
+                    <outputColumn
+                      refId="7"
+                      dataType="dbDate"
+                      lineageId="7"
+                      name="ViewingDate" />
+                    <outputColumn
+                      refId="8"
+                      dataType="i8"
+                      lineageId="8"
+                      name="UniqueViewers" />
+                    <outputColumn
+                      refId="9"
+                      dataType="i4"
+                      lineageId="9"
+                      name="TotalSessions" />
+                    <outputColumn
+                      refId="10"
+                      dataType="i4"
+                      lineageId="10"
+                      name="TotalWatchTime" />
+                    <outputColumn
+                      refId="11"
+                      dataType="r8"
+                      lineageId="11"
+                      name="AvgWatchTime" />
+                    <outputColumn
+                      refId="12"
+                      dataType="r8"
+                      lineageId="12"
+                      name="AvgCompletionRate" />
+                    <outputColumn
+                      refId="13"
+                      dataType="r8"
+                      lineageId="13"
+                      name="AvgEngagementScore" />
+                    <outputColumn
+                      refId="14"
+                      dataType="r8"
+                      lineageId="14"
+                      name="AvgUserRating" />
+                    <outputColumn
+                      refId="15"
+                      dataType="i4"
+                      lineageId="15"
+                      name="CompletedViews" />
+                    <outputColumn
+                      refId="16"
+                      dataType="i4"
+                      lineageId="16"
+                      name="SkippedSessions" />
+                    <outputColumn
+                      refId="17"
+                      dataType="i4"
+                      lineageId="17"
+                      name="BufferingIssues" />
+                    <outputColumn
+                      refId="18"
+                      dataType="i4"
+                      lineageId="18"
+                      name="DeviceVariety" />
+                    <outputColumn
+                      refId="19"
+                      dataType="i4"
+                      lineageId="19"
+                      name="GeographicReach" />
+                  </outputColumns>
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="2"
+              componentClassID="Microsoft.ScriptComponentTransform"
+              contactInfo="Script Component;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;0"
+              description="Script Component"
+              name="Advanced Analytics Calculator"
+              usesDispositions="true"
+              version="0">
+              <properties>
+                <property
+                  dataType="System.String"
+                  description="The script language."
+                  name="ScriptLanguage">Microsoft Visual C# 2019</property>
+                <property
+                  dataType="System.String"
+                  description="The script code."
+                  name="ScriptCode">
+using System;
+using System.Data;
+using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
+using Microsoft.SqlServer.Dts.Runtime.Wrapper;
+
+[Microsoft.SqlServer.Dts.Pipeline.SSISScriptComponentEntryPointAttribute]
+public class ScriptMain : UserComponent
+{
+    public override void Input0_ProcessInputRow(Input0Buffer Row)
+    {
+        // Calculate advanced performance metrics
+        Row.RetentionRate = CalculateRetentionRate(Row);
+        Row.ChurnRate = CalculateChurnRate(Row);
+        Row.TrendingScore = CalculateTrendingScore(Row);
+        Row.RecommendationScore = CalculateRecommendationScore(Row);
+        Row.ViralityIndex = CalculateViralityIndex(Row);
+        Row.QualityIndex = CalculateQualityIndex(Row);
+        Row.PopularityRank = CalculatePopularityRank(Row);
+        Row.ContentHealthScore = CalculateContentHealthScore(Row);
+        
+        // Set processing timestamp
+        Row.AnalysisTimestamp = DateTime.Now;
+    }
+
+    private double CalculateRetentionRate(Input0Buffer Row)
+    {
+        if (Row.TotalSessions == 0) return 0;
+        return (double)Row.UniqueViewers / Row.TotalSessions * 100;
+    }
+
+    private double CalculateChurnRate(Input0Buffer Row)
+    {
+        if (Row.TotalSessions == 0) return 0;
+        return (double)Row.SkippedSessions / Row.TotalSessions * 100;
+    }
+
+    private double CalculateTrendingScore(Input0Buffer Row)
+    {
+        double score = 0;
+        
+        // Base score from engagement
+        score += Row.AvgEngagementScore * 0.4;
+        
+        // Completion rate impact
+        score += Row.AvgCompletionRate * 0.3;
+        
+        // User rating impact
+        if (!Row.AvgUserRating_IsNull)
+            score += (Row.AvgUserRating / 5.0) * 100 * 0.2;
+        
+        // Recency boost (newer content gets higher trending score)
+        if (!Row.Release_Date_IsNull)
+        {
+            var daysSinceRelease = (DateTime.Now - Row.Release_Date).Days;
+            if (daysSinceRelease <= 7) score += 20;
+            else if (daysSinceRelease <= 30) score += 10;
+            else if (daysSinceRelease <= 90) score += 5;
+        }
+        
+        // Volume boost
+        if (Row.TotalSessions > 10000) score += 15;
+        else if (Row.TotalSessions > 1000) score += 10;
+        else if (Row.TotalSessions > 100) score += 5;
+        
+        return Math.Min(100, score);
+    }
+
+    private double CalculateRecommendationScore(Input0Buffer Row)
+    {
+        double score = 50; // Base score
+        
+        // High completion rate boosts recommendation
+        score += Row.AvgCompletionRate * 0.3;
+        
+        // High engagement boosts recommendation
+        score += Row.AvgEngagementScore * 0.2;
+        
+        // User rating impact
+        if (!Row.AvgUserRating_IsNull)
+            score += (Row.AvgUserRating - 3) * 10; // Boost for ratings above 3
+        
+        // Low churn rate is good for recommendations
+        var churnRate = CalculateChurnRate(Row);
+        score += (100 - churnRate) * 0.1;
+        
+        // Geographic and device diversity indicates broad appeal
+        score += Row.GeographicReach * 2;
+        score += Row.DeviceVariety * 3;
+        
+        return Math.Min(100, Math.Max(0, score));
+    }
+
+    private double CalculateViralityIndex(Input0Buffer Row)
+    {
+        double index = 0;
+        
+        // High unique viewer to session ratio indicates sharing
+        if (Row.TotalSessions > 0)
+        {
+            var viewerSessionRatio = (double)Row.UniqueViewers / Row.TotalSessions;
+            if (viewerSessionRatio > 0.8) index += 30;
+            else if (viewerSessionRatio > 0.6) index += 20;
+            else if (viewerSessionRatio > 0.4) index += 10;
+        }
+        
+        // Geographic reach indicates viral spread
+        index += Math.Min(30, Row.GeographicReach * 3);
+        
+        // Device variety indicates cross-platform sharing
+        index += Math.Min(20, Row.DeviceVariety * 5);
+        
+        // High engagement with low buffer issues indicates quality viral content
+        if (Row.BufferingIssues < Row.TotalSessions * 0.1) // Less than 10% buffering issues
+            index += Row.AvgEngagementScore * 0.2;
+        
+        return Math.Min(100, index);
+    }
+
+    private double CalculateQualityIndex(Input0Buffer Row)
+    {
+        double quality = 0;
+        
+        // Low buffering issues indicate good technical quality
+        if (Row.TotalSessions > 0)
+        {
+            var bufferingRate = (double)Row.BufferingIssues / Row.TotalSessions;
+            quality += (1 - bufferingRate) * 30;
+        }
+        
+        // High completion rate indicates content quality
+        quality += Row.AvgCompletionRate * 0.4;
+        
+        // User rating directly reflects quality
+        if (!Row.AvgUserRating_IsNull)
+            quality += (Row.AvgUserRating / 5.0) * 40;
+        
+        // Low skip rate indicates engaging content
+        if (Row.TotalSessions > 0)
+        {
+            var skipRate = (double)Row.SkippedSessions / Row.TotalSessions;
+            quality += (1 - skipRate) * 20;
+        }
+        
+        return Math.Min(100, quality);
+    }
+
+    private int CalculatePopularityRank(Input0Buffer Row)
+    {
+        // Simple popularity ranking based on total sessions
+        // In production, this would be calculated across all content
+        if (Row.TotalSessions > 50000) return 1; // Top tier
+        if (Row.TotalSessions > 10000) return 2; // High popularity
+        if (Row.TotalSessions > 1000) return 3;  // Medium popularity
+        if (Row.TotalSessions > 100) return 4;   // Low popularity
+        return 5; // Minimal popularity
+    }
+
+    private double CalculateContentHealthScore(Input0Buffer Row)
+    {
+        double health = 0;
+        
+        // Combine multiple health indicators
+        health += CalculateQualityIndex(Row) * 0.3;
+        health += Row.AvgEngagementScore * 0.25;
+        health += Row.AvgCompletionRate * 0.25;
+        health += (100 - CalculateChurnRate(Row)) * 0.2;
+        
+        return Math.Min(100, health);
+    }
+}
+                </property>
+              </properties>
+              <inputs>
+                <input
+                  refId="1"
+                  name="Input 0">
+                  <inputColumns>
+                    <inputColumn
+                      refId="1"
+                      cachedDataType="i8"
+                      cachedName="ContentID"
+                      lineageId="1" />
+                    <inputColumn
+                      refId="2"
+                      cachedDataType="wstr"
+                      cachedLength="500"
+                      cachedName="Title"
+                      lineageId="2" />
+                    <inputColumn
+                      refId="3"
+                      cachedDataType="i4"
+                      cachedName="ContentTypeID"
+                      lineageId="3" />
+                    <inputColumn
+                      refId="4"
+                      cachedDataType="i4"
+                      cachedName="GenreID"
+                      lineageId="4" />
+                    <inputColumn
+                      refId="5"
+                      cachedDataType="dbDate"
+                      cachedName="Release_Date"
+                      lineageId="6" />
+                    <inputColumn
+                      refId="6"
+                      cachedDataType="dbDate"
+                      cachedName="ViewingDate"
+                      lineageId="7" />
+                    <inputColumn
+                      refId="7"
+                      cachedDataType="i8"
+                      cachedName="UniqueViewers"
+                      lineageId="8" />
+                    <inputColumn
+                      refId="8"
+                      cachedDataType="i4"
+                      cachedName="TotalSessions"
+                      lineageId="9" />
+                    <inputColumn
+                      refId="9"
+                      cachedDataType="r8"
+                      cachedName="AvgWatchTime"
+                      lineageId="11" />
+                    <inputColumn
+                      refId="10"
+                      cachedDataType="r8"
+                      cachedName="AvgCompletionRate"
+                      lineageId="12" />
+                    <inputColumn
+                      refId="11"
+                      cachedDataType="r8"
+                      cachedName="AvgEngagementScore"
+                      lineageId="13" />
+                    <inputColumn
+                      refId="12"
+                      cachedDataType="r8"
+                      cachedName="AvgUserRating"
+                      lineageId="14" />
+                    <inputColumn
+                      refId="13"
+                      cachedDataType="i4"
+                      cachedName="CompletedViews"
+                      lineageId="15" />
+                    <inputColumn
+                      refId="14"
+                      cachedDataType="i4"
+                      cachedName="SkippedSessions"
+                      lineageId="16" />
+                    <inputColumn
+                      refId="15"
+                      cachedDataType="i4"
+                      cachedName="BufferingIssues"
+                      lineageId="17" />
+                    <inputColumn
+                      refId="16"
+                      cachedDataType="i4"
+                      cachedName="DeviceVariety"
+                      lineageId="18" />
+                    <inputColumn
+                      refId="17"
+                      cachedDataType="i4"
+                      cachedName="GeographicReach"
+                      lineageId="19" />
+                  </inputColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="1"
+                  name="Output 0"
+                  synchronousInputId="1">
+                  <outputColumns>
+                    <outputColumn
+                      refId="1"
+                      dataType="r8"
+                      lineageId="20"
+                      name="RetentionRate" />
+                    <outputColumn
+                      refId="2"
+                      dataType="r8"
+                      lineageId="21"
+                      name="ChurnRate" />
+                    <outputColumn
+                      refId="3"
+                      dataType="r8"
+                      lineageId="22"
+                      name="TrendingScore" />
+                    <outputColumn
+                      refId="4"
+                      dataType="r8"
+                      lineageId="23"
+                      name="RecommendationScore" />
+                    <outputColumn
+                      refId="5"
+                      dataType="r8"
+                      lineageId="24"
+                      name="ViralityIndex" />
+                    <outputColumn
+                      refId="6"
+                      dataType="r8"
+                      lineageId="25"
+                      name="QualityIndex" />
+                    <outputColumn
+                      refId="7"
+                      dataType="i4"
+                      lineageId="26"
+                      name="PopularityRank" />
+                    <outputColumn
+                      refId="8"
+                      dataType="r8"
+                      lineageId="27"
+                      name="ContentHealthScore" />
+                    <outputColumn
+                      refId="9"
+                      dataType="dbTimeStamp"
+                      lineageId="28"
+                      name="AnalysisTimestamp" />
+                  </outputColumns>
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="3"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="OLE DB Destination;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;4"
+              description="OLE DB Destination"
+              name="Content Performance Destination"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset">[Media].[Content_Performance]</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode">3</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Determines whether to check constraints."
+                  name="CheckConstraints">true</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Determines whether to keep identity values."
+                  name="KeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Determines whether to lock the table."
+                  name="TableLock">true</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="3"
+                  connectionManagerID="Package.ConnectionManagers[MediaEntertainmentDB]"
+                  connectionManagerRefId="Package.ConnectionManagers[MediaEntertainmentDB]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="1"
+                  hasSideEffects="true"
+                  name="OLE DB Destination Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="1"
+                      cachedDataType="i8"
+                      cachedName="ContentID"
+                      externalMetadataColumnId="1"
+                      lineageId="1" />
+                    <inputColumn
+                      refId="2"
+                      cachedDataType="dbDate"
+                      cachedName="ViewingDate"
+                      externalMetadataColumnId="2"
+                      lineageId="7" />
+                    <inputColumn
+                      refId="3"
+                      cachedDataType="i8"
+                      cachedName="UniqueViewers"
+                      externalMetadataColumnId="3"
+                      lineageId="8" />
+                    <inputColumn
+                      refId="4"
+                      cachedDataType="r8"
+                      cachedName="AvgWatchTime"
+                      externalMetadataColumnId="4"
+                      lineageId="11" />
+                    <inputColumn
+                      refId="5"
+                      cachedDataType="r8"
+                      cachedName="AvgCompletionRate"
+                      externalMetadataColumnId="5"
+                      lineageId="12" />
+                    <inputColumn
+                      refId="6"
+                      cachedDataType="r8"
+                      cachedName="AvgEngagementScore"
+                      externalMetadataColumnId="6"
+                      lineageId="13" />
+                    <inputColumn
+                      refId="7"
+                      cachedDataType="r8"
+                      cachedName="RetentionRate"
+                      externalMetadataColumnId="7"
+                      lineageId="20" />
+                    <inputColumn
+                      refId="8"
+                      cachedDataType="r8"
+                      cachedName="ChurnRate"
+                      externalMetadataColumnId="8"
+                      lineageId="21" />
+                    <inputColumn
+                      refId="9"
+                      cachedDataType="r8"
+                      cachedName="TrendingScore"
+                      externalMetadataColumnId="9"
+                      lineageId="22" />
+                    <inputColumn
+                      refId="10"
+                      cachedDataType="r8"
+                      cachedName="RecommendationScore"
+                      externalMetadataColumnId="10"
+                      lineageId="23" />
+                    <inputColumn
+                      refId="11"
+                      cachedDataType="r8"
+                      cachedName="AvgUserRating"
+                      externalMetadataColumnId="11"
+                      lineageId="14" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="1"
+                      dataType="i8"
+                      name="ContentID" />
+                    <externalMetadataColumn
+                      refId="2"
+                      dataType="dbDate"
+                      name="Metric_Date" />
+                    <externalMetadataColumn
+                      refId="3"
+                      dataType="i8"
+                      name="Unique_Viewers" />
+                    <externalMetadataColumn
+                      refId="4"
+                      dataType="r8"
+                      name="Average_Watch_Time_Minutes" />
+                    <externalMetadataColumn
+                      refId="5"
+                      dataType="r8"
+                      name="Completion_Rate" />
+                    <externalMetadataColumn
+                      refId="6"
+                      dataType="r8"
+                      name="Engagement_Rate" />
+                    <externalMetadataColumn
+                      refId="7"
+                      dataType="r8"
+                      name="Retention_Rate" />
+                    <externalMetadataColumn
+                      refId="8"
+                      dataType="r8"
+                      name="Churn_Rate" />
+                    <externalMetadataColumn
+                      refId="9"
+                      dataType="r8"
+                      name="Trending_Score" />
+                    <externalMetadataColumn
+                      refId="10"
+                      dataType="r8"
+                      name="Recommendation_Score" />
+                    <externalMetadataColumn
+                      refId="11"
+                      dataType="r8"
+                      name="Average_Rating" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+            </component>
+          </components>
+          <paths>
+            <path
+              refId="1"
+              endId="2"
+              name="Content Consumption Output"
+              startId="1" />
+            <path
+              refId="2"
+              endId="3"
+              name="Analytics Calculator Output"
+              startId="2" />
+          </paths>
+        </pipeline>
+      </DTS:ObjectData>
+    </DTS:Executable>
+  </DTS:Executables>
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[MediaEntertainmentDB]"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{J0K1L2M3-N4O5-6789-3456-012345678901}"
+      DTS:ObjectName="MediaEntertainmentDB">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager>
+          <DTS:Property
+            DTS:Name="ConnectionString">Data Source=@[$Project::DatabaseServer];Initial Catalog=@[$Project::DatabaseName];Provider=SQLNCLI11.1;Integrated Security=SSPI;Auto Translate=False;</DTS:Property>
+        </DTS:ConnectionManager>
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+</DTS:Executable>

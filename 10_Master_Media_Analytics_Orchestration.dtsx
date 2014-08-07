@@ -1,0 +1,659 @@
+<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="1/30/2025 12:00:00 PM"
+  DTS:CreatorComputerName="ENTERPRISE-SERVER"
+  DTS:CreatorName="SSIS Developer"
+  DTS:DTSID="{J0K1L2M3-N4O5-6789-3456-012345678901}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="16.0.5035.3"
+  DTS:LocaleID="1033"
+  DTS:ObjectName="10_Master_Media_Analytics_Orchestration"
+  DTS:PackageType="5"
+  DTS:VersionBuild="1"
+  DTS:VersionGUID="{K1L2M3N4-O5P6-7890-4567-123456789012}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:Variables>
+    <DTS:Variable
+      DTS:CreationName=""
+      DTS:DTSID="{L2M3N4O5-P6Q7-8901-5678-234567890123}"
+      DTS:IncludeInDebugDump="6789"
+      DTS:Namespace="User"
+      DTS:ObjectName="ExecutionID">
+      <DTS:VariableValue
+        DTS:DataType="8"></DTS:VariableValue>
+    </DTS:Variable>
+    <DTS:Variable
+      DTS:CreationName=""
+      DTS:DTSID="{M3N4O5P6-Q7R8-9012-6789-345678901234}"
+      DTS:IncludeInDebugDump="2345"
+      DTS:Namespace="User"
+      DTS:ObjectName="ProcessingDate">
+      <DTS:VariableValue
+        DTS:DataType="7">1/30/2025 12:00:00 AM</DTS:VariableValue>
+    </DTS:Variable>
+    <DTS:Variable
+      DTS:CreationName=""
+      DTS:DTSID="{N4O5P6Q7-R8S9-0123-7890-456789012345}"
+      DTS:IncludeInDebugDump="2345"
+      DTS:Namespace="User"
+      DTS:ObjectName="TotalRecordsProcessed">
+      <DTS:VariableValue
+        DTS:DataType="3">0</DTS:VariableValue>
+    </DTS:Variable>
+    <DTS:Variable
+      DTS:CreationName=""
+      DTS:DTSID="{O5P6Q7R8-S9T0-1234-8901-567890123456}"
+      DTS:IncludeInDebugDump="6789"
+      DTS:Namespace="User"
+      DTS:ObjectName="ProcessingStatus">
+      <DTS:VariableValue
+        DTS:DataType="8">Starting</DTS:VariableValue>
+    </DTS:Variable>
+  </DTS:Variables>
+  <DTS:Executables>
+    <!-- Initialize Processing -->
+    <DTS:Executable
+      DTS:refId="Package\Execute SQL Task - Initialize Processing"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:Description="Initialize the media analytics processing session"
+      DTS:DTSID="{P6Q7R8S9-T0U1-2345-9012-678901234567}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Execute SQL Task - Initialize Processing">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{Q7R8S9T0-U1V2-3456-0123-789012345678}"
+          SQLTask:SqlStatementSource="
+-- Initialize processing session
+DECLARE @ExecutionID UNIQUEIDENTIFIER = NEWID();
+DECLARE @ProcessingDate DATETIME2 = GETDATE();
+
+-- Log the start of processing
+INSERT INTO LOG.ETL_Process_Log 
+(Process_Name, Package_Name, Start_Time, Status, Execution_ID)
+VALUES 
+('Media Analytics Master Orchestration', '10_Master_Media_Analytics_Orchestration', @ProcessingDate, 'Running', @ExecutionID);
+
+-- Return execution details
+SELECT 
+    @ExecutionID as ExecutionID,
+    @ProcessingDate as ProcessingDate,
+    'Initialized' as ProcessingStatus;
+          "
+          SQLTask:ResultSetType="ResultSetType_SingleRow"
+          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask">
+          <SQLTask:ResultBinding
+            SQLTask:ResultName="ExecutionID"
+            SQLTask:DtsVariableName="User::ExecutionID" />
+          <SQLTask:ResultBinding
+            SQLTask:ResultName="ProcessingDate"
+            SQLTask:DtsVariableName="User::ProcessingDate" />
+          <SQLTask:ResultBinding
+            SQLTask:ResultName="ProcessingStatus"
+            SQLTask:DtsVariableName="User::ProcessingStatus" />
+        </SQLTask:SqlTaskData>
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <!-- Execute Package 1: Extract Content Metadata -->
+    <DTS:Executable
+      DTS:refId="Package\Execute Package Task - Content Metadata"
+      DTS:CreationName="Microsoft.ExecutePackageTask"
+      DTS:Description="Execute content metadata extraction package"
+      DTS:DTSID="{R8S9T0U1-V2W3-4567-1234-890123456789}"
+      DTS:ExecutableType="Microsoft.ExecutePackageTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Execute Package Task - Content Metadata">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <ExecutePackageTask:ExecutePackageTaskData
+          ExecutePackageTask:PackageNameFromProjectReference="{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
+          ExecutePackageTask:PackageNameReadOnly="01_Extract_Content_Metadata.dtsx"
+          ExecutePackageTask:UseProjectReference="True"
+          xmlns:ExecutePackageTask="www.microsoft.com/sqlserver/dts/tasks/executepackagetask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <!-- Execute Package 2: Extract Audience Data -->
+    <DTS:Executable
+      DTS:refId="Package\Execute Package Task - Audience Data"
+      DTS:CreationName="Microsoft.ExecutePackageTask"
+      DTS:Description="Execute audience data extraction package"
+      DTS:DTSID="{S9T0U1V2-W3X4-5678-2345-901234567890}"
+      DTS:ExecutableType="Microsoft.ExecutePackageTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Execute Package Task - Audience Data">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <ExecutePackageTask:ExecutePackageTaskData
+          ExecutePackageTask:PackageNameFromProjectReference="{B2C3D4E5-F6G7-8901-BCDE-F23456789012}"
+          ExecutePackageTask:PackageNameReadOnly="02_Extract_Audience_Data.dtsx"
+          ExecutePackageTask:UseProjectReference="True"
+          xmlns:ExecutePackageTask="www.microsoft.com/sqlserver/dts/tasks/executepackagetask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <!-- Execute Package 3: Extract Streaming Analytics -->
+    <DTS:Executable
+      DTS:refId="Package\Execute Package Task - Streaming Analytics"
+      DTS:CreationName="Microsoft.ExecutePackageTask"
+      DTS:Description="Execute streaming analytics extraction package"
+      DTS:DTSID="{T0U1V2W3-X4Y5-6789-3456-012345678901}"
+      DTS:ExecutableType="Microsoft.ExecutePackageTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Execute Package Task - Streaming Analytics">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <ExecutePackageTask:ExecutePackageTaskData
+          ExecutePackageTask:PackageNameFromProjectReference="{C3D4E5F6-G7H8-9012-CDEF-345678901234}"
+          ExecutePackageTask:PackageNameReadOnly="03_Extract_Streaming_Analytics.dtsx"
+          ExecutePackageTask:UseProjectReference="True"
+          xmlns:ExecutePackageTask="www.microsoft.com/sqlserver/dts/tasks/executepackagetask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <!-- Execute Package 4: Extract Social Media Data -->
+    <DTS:Executable
+      DTS:refId="Package\Execute Package Task - Social Media"
+      DTS:CreationName="Microsoft.ExecutePackageTask"
+      DTS:Description="Execute social media data extraction package"
+      DTS:DTSID="{U1V2W3X4-Y5Z6-7890-4567-123456789012}"
+      DTS:ExecutableType="Microsoft.ExecutePackageTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Execute Package Task - Social Media">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <ExecutePackageTask:ExecutePackageTaskData
+          ExecutePackageTask:PackageNameFromProjectReference="{D4E5F6G7-H8I9-0123-DEF0-456789012345}"
+          ExecutePackageTask:PackageNameReadOnly="04_Extract_Social_Media_Data.dtsx"
+          ExecutePackageTask:UseProjectReference="True"
+          xmlns:ExecutePackageTask="www.microsoft.com/sqlserver/dts/tasks/executepackagetask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <!-- Execute Package 5: Extract Revenue Data -->
+    <DTS:Executable
+      DTS:refId="Package\Execute Package Task - Revenue Data"
+      DTS:CreationName="Microsoft.ExecutePackageTask"
+      DTS:Description="Execute revenue data extraction package"
+      DTS:DTSID="{V2W3X4Y5-Z6A7-8901-5678-234567890123}"
+      DTS:ExecutableType="Microsoft.ExecutePackageTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Execute Package Task - Revenue Data">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <ExecutePackageTask:ExecutePackageTaskData
+          ExecutePackageTask:PackageNameFromProjectReference="{E5F6G7H8-I9J0-1234-EF01-567890123456}"
+          ExecutePackageTask:PackageNameReadOnly="05_Extract_Revenue_Data.dtsx"
+          ExecutePackageTask:UseProjectReference="True"
+          xmlns:ExecutePackageTask="www.microsoft.com/sqlserver/dts/tasks/executepackagetask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <!-- Execute Package 6: Transform Content Analytics -->
+    <DTS:Executable
+      DTS:refId="Package\Execute Package Task - Content Analytics"
+      DTS:CreationName="Microsoft.ExecutePackageTask"
+      DTS:Description="Execute content analytics transformation package"
+      DTS:DTSID="{W3X4Y5Z6-A7B8-9012-6789-345678901234}"
+      DTS:ExecutableType="Microsoft.ExecutePackageTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Execute Package Task - Content Analytics">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <ExecutePackageTask:ExecutePackageTaskData
+          ExecutePackageTask:PackageNameFromProjectReference="{F6G7H8I9-J0K1-2345-F012-678901234567}"
+          ExecutePackageTask:PackageNameReadOnly="06_Transform_Content_Analytics.dtsx"
+          ExecutePackageTask:UseProjectReference="True"
+          xmlns:ExecutePackageTask="www.microsoft.com/sqlserver/dts/tasks/executepackagetask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <!-- Execute Package 7: Transform Audience Segmentation -->
+    <DTS:Executable
+      DTS:refId="Package\Execute Package Task - Audience Segmentation"
+      DTS:CreationName="Microsoft.ExecutePackageTask"
+      DTS:Description="Execute audience segmentation transformation package"
+      DTS:DTSID="{X4Y5Z6A7-B8C9-0123-7890-456789012345}"
+      DTS:ExecutableType="Microsoft.ExecutePackageTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Execute Package Task - Audience Segmentation">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <ExecutePackageTask:ExecutePackageTaskData
+          ExecutePackageTask:PackageNameFromProjectReference="{G7H8I9J0-K1L2-3456-0123-789012345678}"
+          ExecutePackageTask:PackageNameReadOnly="07_Transform_Audience_Segmentation.dtsx"
+          ExecutePackageTask:UseProjectReference="True"
+          xmlns:ExecutePackageTask="www.microsoft.com/sqlserver/dts/tasks/executepackagetask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <!-- Execute Package 8: Transform Performance Metrics -->
+    <DTS:Executable
+      DTS:refId="Package\Execute Package Task - Performance Metrics"
+      DTS:CreationName="Microsoft.ExecutePackageTask"
+      DTS:Description="Execute performance metrics transformation package"
+      DTS:DTSID="{Y5Z6A7B8-C9D0-1234-8901-567890123456}"
+      DTS:ExecutableType="Microsoft.ExecutePackageTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Execute Package Task - Performance Metrics">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <ExecutePackageTask:ExecutePackageTaskData
+          ExecutePackageTask:PackageNameFromProjectReference="{H8I9J0K1-L2M3-4567-1234-890123456789}"
+          ExecutePackageTask:PackageNameReadOnly="08_Transform_Performance_Metrics.dtsx"
+          ExecutePackageTask:UseProjectReference="True"
+          xmlns:ExecutePackageTask="www.microsoft.com/sqlserver/dts/tasks/executepackagetask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <!-- Execute Package 9: Load Media Warehouse -->
+    <DTS:Executable
+      DTS:refId="Package\Execute Package Task - Load Warehouse"
+      DTS:CreationName="Microsoft.ExecutePackageTask"
+      DTS:Description="Execute media warehouse loading package"
+      DTS:DTSID="{Z6A7B8C9-D0E1-2345-9012-678901234567}"
+      DTS:ExecutableType="Microsoft.ExecutePackageTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Execute Package Task - Load Warehouse">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <ExecutePackageTask:ExecutePackageTaskData
+          ExecutePackageTask:PackageNameFromProjectReference="{I9J0K1L2-M3N4-5678-2345-901234567890}"
+          ExecutePackageTask:PackageNameReadOnly="09_Load_Media_Warehouse.dtsx"
+          ExecutePackageTask:UseProjectReference="True"
+          xmlns:ExecutePackageTask="www.microsoft.com/sqlserver/dts/tasks/executepackagetask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <!-- Execute Advanced Analytics -->
+    <DTS:Executable
+      DTS:refId="Package\Execute SQL Task - Advanced Analytics"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:Description="Execute advanced analytics procedures"
+      DTS:DTSID="{A7B8C9D0-E1F2-3456-0123-789012345678}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Execute SQL Task - Advanced Analytics">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{B8C9D0E1-F2G3-4567-1234-890123456789}"
+          SQLTask:SqlStatementSource="
+-- Execute comprehensive analytics procedures
+DECLARE @ProcessingDate DATE = CAST(? AS DATE);
+DECLARE @RecordsProcessed INT = 0;
+
+-- Calculate content performance metrics
+EXEC Media.sp_CalculateContentPerformanceMetrics 
+    @StartDate = @ProcessingDate,
+    @EndDate = @ProcessingDate;
+
+SET @RecordsProcessed = @RecordsProcessed + @@ROWCOUNT;
+
+-- Generate audience segments
+EXEC Media.sp_GenerateAudienceSegments 
+    @AnalysisDate = @ProcessingDate;
+
+SET @RecordsProcessed = @RecordsProcessed + @@ROWCOUNT;
+
+-- Calculate revenue metrics
+EXEC Media.sp_CalculateRevenueMetrics 
+    @StartDate = @ProcessingDate,
+    @EndDate = @ProcessingDate;
+
+SET @RecordsProcessed = @RecordsProcessed + @@ROWCOUNT;
+
+-- Analyze social engagement
+EXEC Media.sp_AnalyzeSocialEngagement 
+    @StartDate = @ProcessingDate,
+    @EndDate = @ProcessingDate;
+
+SET @RecordsProcessed = @RecordsProcessed + @@ROWCOUNT;
+
+-- Generate content recommendations for active users
+EXEC Media.sp_GenerateContentRecommendations 
+    @TopN = 10;
+
+SET @RecordsProcessed = @RecordsProcessed + @@ROWCOUNT;
+
+-- Monitor data quality
+EXEC Media.sp_MonitorDataQuality;
+
+-- Optimize performance
+EXEC Media.sp_OptimizePerformance;
+
+-- Return processing summary
+SELECT @RecordsProcessed as RecordsProcessed;
+          "
+          SQLTask:ResultSetType="ResultSetType_SingleRow"
+          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask">
+          <SQLTask:ParameterBinding
+            SQLTask:ParameterName="0"
+            SQLTask:DtsVariableName="User::ProcessingDate"
+            SQLTask:ParameterDirection="Input"
+            SQLTask:DataType="135"
+            SQLTask:ParameterSize="-1" />
+          <SQLTask:ResultBinding
+            SQLTask:ResultName="RecordsProcessed"
+            SQLTask:DtsVariableName="User::TotalRecordsProcessed" />
+        </SQLTask:SqlTaskData>
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <!-- Finalize Processing -->
+    <DTS:Executable
+      DTS:refId="Package\Execute SQL Task - Finalize Processing"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:Description="Finalize the media analytics processing session"
+      DTS:DTSID="{C9D0E1F2-G3H4-5678-2345-901234567890}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Execute SQL Task - Finalize Processing">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{D0E1F2G3-H4I5-6789-3456-012345678901}"
+          SQLTask:SqlStatementSource="
+-- Finalize processing session
+DECLARE @ExecutionID UNIQUEIDENTIFIER = CAST(? AS UNIQUEIDENTIFIER);
+DECLARE @RecordsProcessed INT = ?;
+DECLARE @EndTime DATETIME2 = GETDATE();
+
+-- Update the process log
+UPDATE LOG.ETL_Process_Log 
+SET 
+    End_Time = @EndTime,
+    Status = 'Success',
+    Records_Processed = @RecordsProcessed
+WHERE Execution_ID = @ExecutionID;
+
+-- Log summary statistics
+INSERT INTO LOG.ETL_Process_Log 
+(Process_Name, Package_Name, Start_Time, End_Time, Status, Records_Processed, Execution_ID)
+VALUES 
+('Media Analytics Processing Summary', 'Master Orchestration', @EndTime, @EndTime, 'Completed', @RecordsProcessed, @ExecutionID);
+
+-- Generate processing report
+SELECT 
+    'Media Analytics Processing Completed Successfully' as ProcessingStatus,
+    @RecordsProcessed as TotalRecordsProcessed,
+    @EndTime as CompletionTime,
+    DATEDIFF(MINUTE, (SELECT MIN(Start_Time) FROM LOG.ETL_Process_Log WHERE Execution_ID = @ExecutionID), @EndTime) as ProcessingDurationMinutes;
+          "
+          xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask">
+          <SQLTask:ParameterBinding
+            SQLTask:ParameterName="0"
+            SQLTask:DtsVariableName="User::ExecutionID"
+            SQLTask:ParameterDirection="Input"
+            SQLTask:DataType="129"
+            SQLTask:ParameterSize="-1" />
+          <SQLTask:ParameterBinding
+            SQLTask:ParameterName="1"
+            SQLTask:DtsVariableName="User::TotalRecordsProcessed"
+            SQLTask:ParameterDirection="Input"
+            SQLTask:DataType="3"
+            SQLTask:ParameterSize="-1" />
+        </SQLTask:SqlTaskData>
+      </DTS:ObjectData>
+    </DTS:Executable>
+
+    <!-- Send Notification -->
+    <DTS:Executable
+      DTS:refId="Package\Send Mail Task - Processing Complete"
+      DTS:CreationName="Microsoft.SendMailTask"
+      DTS:Description="Send notification email about processing completion"
+      DTS:DTSID="{E1F2G3H4-I5J6-7890-4567-123456789012}"
+      DTS:ExecutableType="Microsoft.SendMailTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Send Mail Task - Processing Complete">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SendMailTask:SendMailTaskData
+          SendMailTask:SMTPServer="smtp.company.com"
+          SendMailTask:From="ssis-notifications@company.com"
+          SendMailTask:To="analytics-team@company.com"
+          SendMailTask:Subject="Media Analytics Processing Completed Successfully"
+          SendMailTask:MessageSource="The Media Entertainment Analytics processing has completed successfully.
+
+Processing Summary:
+- Execution ID: " + @[User::ExecutionID] + "
+- Processing Date: " + (DT_WSTR, 20) @[User::ProcessingDate] + "
+- Total Records Processed: " + (DT_WSTR, 10) @[User::TotalRecordsProcessed] + "
+- Status: " + @[User::ProcessingStatus] + "
+
+All packages executed successfully:
+✓ Content Metadata Extraction
+✓ Audience Data Extraction  
+✓ Streaming Analytics Extraction
+✓ Social Media Data Extraction
+✓ Revenue Data Extraction
+✓ Content Analytics Transformation
+✓ Audience Segmentation Transformation
+✓ Performance Metrics Transformation
+✓ Media Warehouse Loading
+✓ Advanced Analytics Processing
+
+The media analytics data warehouse has been updated with the latest information and is ready for business intelligence reporting and analysis.
+
+Best regards,
+SSIS Media Analytics Platform"
+          SendMailTask:MessageSourceType="DirectInput"
+          xmlns:SendMailTask="www.microsoft.com/sqlserver/dts/tasks/sendmailtask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+  </DTS:Executables>
+
+  <!-- Precedence Constraints for Sequential Execution -->
+  <DTS:PrecedenceConstraints>
+    <!-- Initialize -> Content Metadata -->
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Initialize to Content]"
+      DTS:CreationName=""
+      DTS:DTSID="{F2G3H4I5-J6K7-8901-5678-234567890123}"
+      DTS:From="Package\Execute SQL Task - Initialize Processing"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Initialize to Content"
+      DTS:To="Package\Execute Package Task - Content Metadata" />
+
+    <!-- Content Metadata -> Audience Data -->
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Content to Audience]"
+      DTS:CreationName=""
+      DTS:DTSID="{G3H4I5J6-K7L8-9012-6789-345678901234}"
+      DTS:From="Package\Execute Package Task - Content Metadata"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Content to Audience"
+      DTS:To="Package\Execute Package Task - Audience Data" />
+
+    <!-- Audience Data -> Streaming Analytics -->
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Audience to Streaming]"
+      DTS:CreationName=""
+      DTS:DTSID="{H4I5J6K7-L8M9-0123-7890-456789012345}"
+      DTS:From="Package\Execute Package Task - Audience Data"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Audience to Streaming"
+      DTS:To="Package\Execute Package Task - Streaming Analytics" />
+
+    <!-- Streaming Analytics -> Social Media -->
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Streaming to Social]"
+      DTS:CreationName=""
+      DTS:DTSID="{I5J6K7L8-M9N0-1234-8901-567890123456}"
+      DTS:From="Package\Execute Package Task - Streaming Analytics"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Streaming to Social"
+      DTS:To="Package\Execute Package Task - Social Media" />
+
+    <!-- Social Media -> Revenue Data -->
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Social to Revenue]"
+      DTS:CreationName=""
+      DTS:DTSID="{J6K7L8M9-N0O1-2345-9012-678901234567}"
+      DTS:From="Package\Execute Package Task - Social Media"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Social to Revenue"
+      DTS:To="Package\Execute Package Task - Revenue Data" />
+
+    <!-- Revenue Data -> Content Analytics -->
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Revenue to Analytics]"
+      DTS:CreationName=""
+      DTS:DTSID="{K7L8M9N0-O1P2-3456-0123-789012345678}"
+      DTS:From="Package\Execute Package Task - Revenue Data"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Revenue to Analytics"
+      DTS:To="Package\Execute Package Task - Content Analytics" />
+
+    <!-- Content Analytics -> Audience Segmentation -->
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Analytics to Segmentation]"
+      DTS:CreationName=""
+      DTS:DTSID="{L8M9N0O1-P2Q3-4567-1234-890123456789}"
+      DTS:From="Package\Execute Package Task - Content Analytics"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Analytics to Segmentation"
+      DTS:To="Package\Execute Package Task - Audience Segmentation" />
+
+    <!-- Audience Segmentation -> Performance Metrics -->
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Segmentation to Performance]"
+      DTS:CreationName=""
+      DTS:DTSID="{M9N0O1P2-Q3R4-5678-2345-901234567890}"
+      DTS:From="Package\Execute Package Task - Audience Segmentation"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Segmentation to Performance"
+      DTS:To="Package\Execute Package Task - Performance Metrics" />
+
+    <!-- Performance Metrics -> Load Warehouse -->
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Performance to Warehouse]"
+      DTS:CreationName=""
+      DTS:DTSID="{N0O1P2Q3-R4S5-6789-3456-012345678901}"
+      DTS:From="Package\Execute Package Task - Performance Metrics"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Performance to Warehouse"
+      DTS:To="Package\Execute Package Task - Load Warehouse" />
+
+    <!-- Load Warehouse -> Advanced Analytics -->
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Warehouse to Advanced]"
+      DTS:CreationName=""
+      DTS:DTSID="{O1P2Q3R4-S5T6-7890-4567-123456789012}"
+      DTS:From="Package\Execute Package Task - Load Warehouse"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Warehouse to Advanced"
+      DTS:To="Package\Execute SQL Task - Advanced Analytics" />
+
+    <!-- Advanced Analytics -> Finalize -->
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Advanced to Finalize]"
+      DTS:CreationName=""
+      DTS:DTSID="{P2Q3R4S5-T6U7-8901-5678-234567890123}"
+      DTS:From="Package\Execute SQL Task - Advanced Analytics"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Advanced to Finalize"
+      DTS:To="Package\Execute SQL Task - Finalize Processing" />
+
+    <!-- Finalize -> Send Notification -->
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Finalize to Notification]"
+      DTS:CreationName=""
+      DTS:DTSID="{Q3R4S5T6-U7V8-9012-6789-345678901234}"
+      DTS:From="Package\Execute SQL Task - Finalize Processing"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Finalize to Notification"
+      DTS:To="Package\Send Mail Task - Processing Complete" />
+  </DTS:PrecedenceConstraints>
+
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[MediaEntertainmentDB]"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{R4S5T6U7-V8W9-0123-7890-456789012345}"
+      DTS:ObjectName="MediaEntertainmentDB">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager>
+          <DTS:Property
+            DTS:Name="ConnectionString">Data Source=@[$Project::DatabaseServer];Initial Catalog=@[$Project::DatabaseName];Provider=SQLNCLI11.1;Integrated Security=SSPI;Auto Translate=False;</DTS:Property>
+        </DTS:ConnectionManager>
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+
+  <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
+<Objects Version="8">
+  <Package design-time-name="Package">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="16" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph">
+        <!-- Initialize Processing -->
+        <NodeLayout
+          Size="200,42"
+          Id="Package\Execute SQL Task - Initialize Processing"
+          TopLeft="300,50" />
+        
+        <!-- Extract Packages (Parallel) -->
+        <NodeLayout
+          Size="180,42"
+          Id="Package\Execute Package Task - Content Metadata"
+          TopLeft="50,150" />
+        <NodeLayout
+          Size="180,42"
+          Id="Package\Execute Package Task - Audience Data"
+          TopLeft="250,150" />
+        <NodeLayout
+          Size="180,42"
+          Id="Package\Execute Package Task - Streaming Analytics"
+          TopLeft="450,150" />
+        <NodeLayout
+          Size="180,42"
+          Id="Package\Execute Package Task - Social Media"
+          TopLeft="650,150" />
+        <NodeLayout
+          Size="180,42"
+          Id="Package\Execute Package Task - Revenue Data"
+          TopLeft="850,150" />
+        
+        <!-- Transform Packages -->
+        <NodeLayout
+          Size="180,42"
+          Id="Package\Execute Package Task - Content Analytics"
+          TopLeft="150,250" />
+        <NodeLayout
+          Size="180,42"
+          Id="Package\Execute Package Task - Audience Segmentation"
+          TopLeft="350,250" />
+        <NodeLayout
+          Size="180,42"
+          Id="Package\Execute Package Task - Performance Metrics"
+          TopLeft="550,250" />
+        
+        <!-- Load Package -->
+        <NodeLayout
+          Size="180,42"
+          Id="Package\Execute Package Task - Load Warehouse"
+          TopLeft="350,350" />
+        
+        <!-- Analytics and Finalization -->
+        <NodeLayout
+          Size="200,42"
+          Id="Package\Execute SQL Task - Advanced Analytics"
+          TopLeft="300,450" />
+        <NodeLayout
+          Size="200,42"
+          Id="Package\Execute SQL Task - Finalize Processing"
+          TopLeft="300,550" />
+        <NodeLayout
+          Size="200,42"
+          Id="Package\Send Mail Task - Processing Complete"
+          TopLeft="300,650" />
+      </GraphLayout>
+    </LayoutInfo>
+  </Package>
+</Objects>]]></DTS:DesignTimeProperties>
+</DTS:Executable>

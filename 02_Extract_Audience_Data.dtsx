@@ -1,0 +1,800 @@
+<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="1/30/2025 12:00:00 PM"
+  DTS:CreatorComputerName="ENTERPRISE-SERVER"
+  DTS:CreatorName="SSIS Developer"
+  DTS:DTSID="{B2C3D4E5-F6G7-8901-BCDE-F23456789012}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="16.0.5035.3"
+  DTS:LocaleID="1033"
+  DTS:ObjectName="02_Extract_Audience_Data"
+  DTS:PackageType="5"
+  DTS:VersionBuild="1"
+  DTS:VersionGUID="{C3D4E5F6-G7H8-9012-CDEF-345678901234}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:Variables>
+    <DTS:Variable
+      DTS:CreationName=""
+      DTS:DTSID="{D4E5F6G7-H8I9-0123-DEF0-456789012345}"
+      DTS:IncludeInDebugDump="6789"
+      DTS:Namespace="User"
+      DTS:ObjectName="AudienceAPIEndpoint">
+      <DTS:VariableValue
+        DTS:DataType="8">https://api.audiencedata.com/v1</DTS:VariableValue>
+    </DTS:Variable>
+    <DTS:Variable
+      DTS:CreationName=""
+      DTS:DTSID="{E5F6G7H8-I9J0-1234-EF01-567890123456}"
+      DTS:IncludeInDebugDump="2345"
+      DTS:Namespace="User"
+      DTS:ObjectName="ProcessingBatchSize">
+      <DTS:VariableValue
+        DTS:DataType="3">5000</DTS:VariableValue>
+    </DTS:Variable>
+  </DTS:Variables>
+  <DTS:Executables>
+    <DTS:Executable
+      DTS:refId="Package\Data Flow Task - Extract Audience Demographics"
+      DTS:CreationName="Microsoft.Pipeline"
+      DTS:Description="Extract audience demographic data from multiple platforms"
+      DTS:DTSID="{F6G7H8I9-J0K1-2345-F012-678901234567}"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Data Flow Task - Extract Audience Demographics"
+      DTS:TaskContact="Performs high-performance data extraction, transformation and loading">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <pipeline
+          version="1">
+          <components>
+            <component
+              refId="1"
+              componentClassID="Microsoft.OLEDBSource"
+              contactInfo="OLE DB Source;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;7"
+              description="OLE DB Source"
+              name="Platform User Data Source"
+              usesDispositions="true"
+              version="7">
+              <properties>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand">
+-- Extract audience data from multiple platform staging tables
+SELECT 
+    'Netflix' as Platform_Name,
+    User_ID,
+    Registration_Date,
+    Subscription_Type,
+    Subscription_Start_Date,
+    Subscription_End_Date,
+    Age_Group,
+    Gender,
+    Geographic_Location,
+    Device_Type,
+    Preferred_Language,
+    Viewing_Hours_Per_Week,
+    Preferred_Genres,
+    GETDATE() as Extract_Timestamp
+FROM STG.Netflix_Users
+WHERE Processing_Status = 'Pending'
+
+UNION ALL
+
+SELECT 
+    'Amazon Prime' as Platform_Name,
+    Customer_ID as User_ID,
+    Account_Created as Registration_Date,
+    Membership_Type as Subscription_Type,
+    Membership_Start as Subscription_Start_Date,
+    Membership_End as Subscription_End_Date,
+    Demographics_Age as Age_Group,
+    Demographics_Gender as Gender,
+    Location as Geographic_Location,
+    Primary_Device as Device_Type,
+    Language_Preference as Preferred_Language,
+    Weekly_Usage_Hours as Viewing_Hours_Per_Week,
+    Content_Preferences as Preferred_Genres,
+    GETDATE() as Extract_Timestamp
+FROM STG.AmazonPrime_Users
+WHERE Processing_Status = 'Pending'
+
+UNION ALL
+
+SELECT 
+    'Disney+' as Platform_Name,
+    Subscriber_ID as User_ID,
+    Join_Date as Registration_Date,
+    Plan_Type as Subscription_Type,
+    Plan_Start_Date as Subscription_Start_Date,
+    Plan_End_Date as Subscription_End_Date,
+    User_Age_Range as Age_Group,
+    User_Gender as Gender,
+    Country_Region as Geographic_Location,
+    Streaming_Device as Device_Type,
+    UI_Language as Preferred_Language,
+    Avg_Weekly_Hours as Viewing_Hours_Per_Week,
+    Favorite_Categories as Preferred_Genres,
+    GETDATE() as Extract_Timestamp
+FROM STG.DisneyPlus_Users
+WHERE Processing_Status = 'Pending'
+                </property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode">2</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="1"
+                  connectionManagerID="Package.ConnectionManagers[MediaEntertainmentDB]"
+                  connectionManagerRefId="Package.ConnectionManagers[MediaEntertainmentDB]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <outputs>
+                <output
+                  refId="1"
+                  name="OLE DB Source Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="1"
+                      dataType="wstr"
+                      length="50"
+                      lineageId="1"
+                      name="Platform_Name" />
+                    <outputColumn
+                      refId="2"
+                      dataType="wstr"
+                      length="100"
+                      lineageId="2"
+                      name="User_ID" />
+                    <outputColumn
+                      refId="3"
+                      dataType="dbTimeStamp"
+                      lineageId="3"
+                      name="Registration_Date" />
+                    <outputColumn
+                      refId="4"
+                      dataType="wstr"
+                      length="50"
+                      lineageId="4"
+                      name="Subscription_Type" />
+                    <outputColumn
+                      refId="5"
+                      dataType="dbTimeStamp"
+                      lineageId="5"
+                      name="Subscription_Start_Date" />
+                    <outputColumn
+                      refId="6"
+                      dataType="dbTimeStamp"
+                      lineageId="6"
+                      name="Subscription_End_Date" />
+                    <outputColumn
+                      refId="7"
+                      dataType="wstr"
+                      length="20"
+                      lineageId="7"
+                      name="Age_Group" />
+                    <outputColumn
+                      refId="8"
+                      dataType="wstr"
+                      length="10"
+                      lineageId="8"
+                      name="Gender" />
+                    <outputColumn
+                      refId="9"
+                      dataType="wstr"
+                      length="100"
+                      lineageId="9"
+                      name="Geographic_Location" />
+                    <outputColumn
+                      refId="10"
+                      dataType="wstr"
+                      length="50"
+                      lineageId="10"
+                      name="Device_Type" />
+                    <outputColumn
+                      refId="11"
+                      dataType="wstr"
+                      length="10"
+                      lineageId="11"
+                      name="Preferred_Language" />
+                    <outputColumn
+                      refId="12"
+                      dataType="i4"
+                      lineageId="12"
+                      name="Viewing_Hours_Per_Week" />
+                    <outputColumn
+                      refId="13"
+                      dataType="nText"
+                      lineageId="13"
+                      name="Preferred_Genres" />
+                  </outputColumns>
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="2"
+              componentClassID="Microsoft.ScriptComponentTransform"
+              contactInfo="Script Component;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;0"
+              description="Script Component"
+              name="Audience Analytics Processor"
+              usesDispositions="true"
+              version="0">
+              <properties>
+                <property
+                  dataType="System.String"
+                  description="The script language."
+                  name="ScriptLanguage">Microsoft Visual C# 2019</property>
+                <property
+                  dataType="System.String"
+                  description="The script code."
+                  name="ScriptCode">
+using System;
+using System.Data;
+using Microsoft.SqlServer.Dts.Pipeline.Wrapper;
+using Microsoft.SqlServer.Dts.Runtime.Wrapper;
+using System.Text.RegularExpressions;
+using System.Linq;
+
+[Microsoft.SqlServer.Dts.Pipeline.SSISScriptComponentEntryPointAttribute]
+public class ScriptMain : UserComponent
+{
+    public override void PreExecute()
+    {
+        base.PreExecute();
+    }
+
+    public override void PostExecute()
+    {
+        base.PostExecute();
+    }
+
+    public override void Input0_ProcessInputRow(Input0Buffer Row)
+    {
+        // Generate unique audience GUID
+        Row.AudienceGUID = Guid.NewGuid().ToString();
+        
+        // Calculate audience metrics
+        Row.EngagementScore = CalculateEngagementScore(Row);
+        Row.LifetimeValue = EstimateLifetimeValue(Row);
+        Row.ChurnRisk = CalculateChurnRisk(Row);
+        
+        // Demographic analysis
+        Row.DemographicSegment = DetermineDemographicSegment(Row);
+        Row.BehavioralSegment = DetermineBehavioralSegment(Row);
+        
+        // Platform-specific processing
+        Row.PlatformTier = DeterminePlatformTier(Row);
+        Row.ContentAffinityScore = CalculateContentAffinity(Row);
+        
+        // Data quality flags
+        Row.DataQualityScore = CalculateDataQuality(Row);
+        Row.RequiresEnrichment = RequiresDataEnrichment(Row);
+        
+        Row.ProcessingTimestamp = DateTime.Now;
+    }
+
+    private double CalculateEngagementScore(Input0Buffer Row)
+    {
+        double score = 50.0; // Base score
+        
+        // Viewing hours impact
+        if (Row.Viewing_Hours_Per_Week > 20) score += 30;
+        else if (Row.Viewing_Hours_Per_Week > 10) score += 20;
+        else if (Row.Viewing_Hours_Per_Week > 5) score += 10;
+        
+        // Subscription longevity
+        if (!Row.Subscription_Start_Date_IsNull && !Row.Registration_Date_IsNull)
+        {
+            var subscriptionDays = (DateTime.Now - Row.Subscription_Start_Date).Days;
+            if (subscriptionDays > 365) score += 20;
+            else if (subscriptionDays > 180) score += 15;
+            else if (subscriptionDays > 90) score += 10;
+        }
+        
+        // Premium subscription bonus
+        if (!string.IsNullOrEmpty(Row.Subscription_Type) && 
+            (Row.Subscription_Type.Contains("Premium") || Row.Subscription_Type.Contains("Plus")))
+            score += 15;
+        
+        return Math.Min(100, score);
+    }
+
+    private decimal EstimateLifetimeValue(Input0Buffer Row)
+    {
+        decimal baseValue = 50.0m; // Base monthly value
+        
+        // Adjust based on subscription type
+        if (!string.IsNullOrEmpty(Row.Subscription_Type))
+        {
+            if (Row.Subscription_Type.Contains("Premium")) baseValue = 19.99m;
+            else if (Row.Subscription_Type.Contains("Standard")) baseValue = 15.99m;
+            else if (Row.Subscription_Type.Contains("Basic")) baseValue = 9.99m;
+        }
+        
+        // Calculate expected lifetime (months)
+        int expectedLifetime = 24; // Default 2 years
+        
+        if (Row.Viewing_Hours_Per_Week > 15) expectedLifetime = 36; // 3 years for heavy users
+        else if (Row.Viewing_Hours_Per_Week < 3) expectedLifetime = 12; // 1 year for light users
+        
+        return baseValue * expectedLifetime;
+    }
+
+    private double CalculateChurnRisk(Input0Buffer Row)
+    {
+        double risk = 20.0; // Base risk
+        
+        // Low engagement increases risk
+        if (Row.Viewing_Hours_Per_Week < 2) risk += 40;
+        else if (Row.Viewing_Hours_Per_Week < 5) risk += 20;
+        
+        // Subscription end date proximity
+        if (!Row.Subscription_End_Date_IsNull)
+        {
+            var daysToExpiry = (Row.Subscription_End_Date - DateTime.Now).Days;
+            if (daysToExpiry < 30) risk += 30;
+            else if (daysToExpiry < 90) risk += 15;
+        }
+        
+        // New users have higher churn risk initially
+        if (!Row.Registration_Date_IsNull)
+        {
+            var daysSinceRegistration = (DateTime.Now - Row.Registration_Date).Days;
+            if (daysSinceRegistration < 30) risk += 25;
+            else if (daysSinceRegistration < 90) risk += 10;
+        }
+        
+        return Math.Min(100, risk);
+    }
+
+    private string DetermineDemographicSegment(Input0Buffer Row)
+    {
+        string segment = "General";
+        
+        if (!string.IsNullOrEmpty(Row.Age_Group) && !string.IsNullOrEmpty(Row.Gender))
+        {
+            segment = $"{Row.Age_Group}_{Row.Gender}";
+        }
+        else if (!string.IsNullOrEmpty(Row.Age_Group))
+        {
+            segment = Row.Age_Group;
+        }
+        
+        // Add geographic component if available
+        if (!string.IsNullOrEmpty(Row.Geographic_Location))
+        {
+            var location = Row.Geographic_Location.Split(',')[0].Trim(); // Get first part
+            segment += $"_{location}";
+        }
+        
+        return segment;
+    }
+
+    private string DetermineBehavioralSegment(Input0Buffer Row)
+    {
+        if (Row.Viewing_Hours_Per_Week > 25) return "Binge_Watcher";
+        if (Row.Viewing_Hours_Per_Week > 15) return "Heavy_User";
+        if (Row.Viewing_Hours_Per_Week > 8) return "Regular_User";
+        if (Row.Viewing_Hours_Per_Week > 3) return "Casual_User";
+        return "Light_User";
+    }
+
+    private string DeterminePlatformTier(Input0Buffer Row)
+    {
+        if (!string.IsNullOrEmpty(Row.Subscription_Type))
+        {
+            if (Row.Subscription_Type.Contains("Premium") || Row.Subscription_Type.Contains("Plus"))
+                return "Premium";
+            if (Row.Subscription_Type.Contains("Standard"))
+                return "Standard";
+            if (Row.Subscription_Type.Contains("Basic"))
+                return "Basic";
+        }
+        return "Free";
+    }
+
+    private double CalculateContentAffinity(Input0Buffer Row)
+    {
+        double affinity = 50.0;
+        
+        // More preferred genres indicate higher content engagement
+        if (!string.IsNullOrEmpty(Row.Preferred_Genres))
+        {
+            var genreCount = Row.Preferred_Genres.Split(',').Length;
+            if (genreCount > 5) affinity += 25;
+            else if (genreCount > 3) affinity += 15;
+            else if (genreCount > 1) affinity += 10;
+        }
+        
+        // Platform-specific adjustments
+        if (Row.Platform_Name == "Disney+" && 
+            !string.IsNullOrEmpty(Row.Preferred_Genres) && 
+            Row.Preferred_Genres.Contains("Animation"))
+            affinity += 15;
+        
+        return Math.Min(100, affinity);
+    }
+
+    private int CalculateDataQuality(Input0Buffer Row)
+    {
+        int quality = 100;
+        
+        // Deduct points for missing critical data
+        if (string.IsNullOrEmpty(Row.User_ID)) quality -= 30;
+        if (Row.Registration_Date_IsNull) quality -= 15;
+        if (string.IsNullOrEmpty(Row.Age_Group)) quality -= 10;
+        if (string.IsNullOrEmpty(Row.Gender)) quality -= 10;
+        if (string.IsNullOrEmpty(Row.Geographic_Location)) quality -= 10;
+        if (Row.Viewing_Hours_Per_Week <= 0) quality -= 15;
+        if (string.IsNullOrEmpty(Row.Preferred_Genres)) quality -= 10;
+        
+        return Math.Max(0, quality);
+    }
+
+    private bool RequiresDataEnrichment(Input0Buffer Row)
+    {
+        // Flag records that need additional data enrichment
+        if (string.IsNullOrEmpty(Row.Age_Group)) return true;
+        if (string.IsNullOrEmpty(Row.Gender)) return true;
+        if (string.IsNullOrEmpty(Row.Geographic_Location)) return true;
+        if (Row.Viewing_Hours_Per_Week <= 0) return true;
+        
+        return false;
+    }
+}
+                </property>
+              </properties>
+              <inputs>
+                <input
+                  refId="1"
+                  name="Input 0">
+                  <inputColumns>
+                    <inputColumn
+                      refId="1"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="Platform_Name"
+                      lineageId="1" />
+                    <inputColumn
+                      refId="2"
+                      cachedDataType="wstr"
+                      cachedLength="100"
+                      cachedName="User_ID"
+                      lineageId="2" />
+                    <inputColumn
+                      refId="3"
+                      cachedDataType="dbTimeStamp"
+                      cachedName="Registration_Date"
+                      lineageId="3" />
+                    <inputColumn
+                      refId="4"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="Subscription_Type"
+                      lineageId="4" />
+                    <inputColumn
+                      refId="5"
+                      cachedDataType="dbTimeStamp"
+                      cachedName="Subscription_Start_Date"
+                      lineageId="5" />
+                    <inputColumn
+                      refId="6"
+                      cachedDataType="dbTimeStamp"
+                      cachedName="Subscription_End_Date"
+                      lineageId="6" />
+                    <inputColumn
+                      refId="7"
+                      cachedDataType="wstr"
+                      cachedLength="20"
+                      cachedName="Age_Group"
+                      lineageId="7" />
+                    <inputColumn
+                      refId="8"
+                      cachedDataType="wstr"
+                      cachedLength="10"
+                      cachedName="Gender"
+                      lineageId="8" />
+                    <inputColumn
+                      refId="9"
+                      cachedDataType="wstr"
+                      cachedLength="100"
+                      cachedName="Geographic_Location"
+                      lineageId="9" />
+                    <inputColumn
+                      refId="10"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="Device_Type"
+                      lineageId="10" />
+                    <inputColumn
+                      refId="11"
+                      cachedDataType="wstr"
+                      cachedLength="10"
+                      cachedName="Preferred_Language"
+                      lineageId="11" />
+                    <inputColumn
+                      refId="12"
+                      cachedDataType="i4"
+                      cachedName="Viewing_Hours_Per_Week"
+                      lineageId="12" />
+                    <inputColumn
+                      refId="13"
+                      cachedDataType="nText"
+                      cachedName="Preferred_Genres"
+                      lineageId="13" />
+                  </inputColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="1"
+                  name="Output 0"
+                  synchronousInputId="1">
+                  <outputColumns>
+                    <outputColumn
+                      refId="1"
+                      dataType="wstr"
+                      length="50"
+                      lineageId="14"
+                      name="AudienceGUID" />
+                    <outputColumn
+                      refId="2"
+                      dataType="r8"
+                      lineageId="15"
+                      name="EngagementScore" />
+                    <outputColumn
+                      refId="3"
+                      dataType="cy"
+                      lineageId="16"
+                      name="LifetimeValue" />
+                    <outputColumn
+                      refId="4"
+                      dataType="r8"
+                      lineageId="17"
+                      name="ChurnRisk" />
+                    <outputColumn
+                      refId="5"
+                      dataType="wstr"
+                      length="100"
+                      lineageId="18"
+                      name="DemographicSegment" />
+                    <outputColumn
+                      refId="6"
+                      dataType="wstr"
+                      length="50"
+                      lineageId="19"
+                      name="BehavioralSegment" />
+                    <outputColumn
+                      refId="7"
+                      dataType="wstr"
+                      length="20"
+                      lineageId="20"
+                      name="PlatformTier" />
+                    <outputColumn
+                      refId="8"
+                      dataType="r8"
+                      lineageId="21"
+                      name="ContentAffinityScore" />
+                    <outputColumn
+                      refId="9"
+                      dataType="i4"
+                      lineageId="22"
+                      name="DataQualityScore" />
+                    <outputColumn
+                      refId="10"
+                      dataType="bool"
+                      lineageId="23"
+                      name="RequiresEnrichment" />
+                    <outputColumn
+                      refId="11"
+                      dataType="dbTimeStamp"
+                      lineageId="24"
+                      name="ProcessingTimestamp" />
+                  </outputColumns>
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="3"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="OLE DB Destination;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;4"
+              description="OLE DB Destination"
+              name="Audience Master Destination"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset">[Media].[Audience_Master]</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode">3</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the batch size for inserts."
+                  name="BatchSize">5000</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Determines whether to check constraints."
+                  name="CheckConstraints">true</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Determines whether to keep identity values."
+                  name="KeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Determines whether to lock the table."
+                  name="TableLock">true</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="3"
+                  connectionManagerID="Package.ConnectionManagers[MediaEntertainmentDB]"
+                  connectionManagerRefId="Package.ConnectionManagers[MediaEntertainmentDB]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="1"
+                  hasSideEffects="true"
+                  name="OLE DB Destination Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="1"
+                      cachedDataType="wstr"
+                      cachedLength="100"
+                      cachedName="User_ID"
+                      externalMetadataColumnId="1"
+                      lineageId="2" />
+                    <inputColumn
+                      refId="2"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="Platform_Name"
+                      externalMetadataColumnId="2"
+                      lineageId="1" />
+                    <inputColumn
+                      refId="3"
+                      cachedDataType="dbTimeStamp"
+                      cachedName="Registration_Date"
+                      externalMetadataColumnId="3"
+                      lineageId="3" />
+                    <inputColumn
+                      refId="4"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="Subscription_Type"
+                      externalMetadataColumnId="4"
+                      lineageId="4" />
+                    <inputColumn
+                      refId="5"
+                      cachedDataType="dbTimeStamp"
+                      cachedName="Subscription_Start_Date"
+                      externalMetadataColumnId="5"
+                      lineageId="5" />
+                    <inputColumn
+                      refId="6"
+                      cachedDataType="dbTimeStamp"
+                      cachedName="Subscription_End_Date"
+                      externalMetadataColumnId="6"
+                      lineageId="6" />
+                    <inputColumn
+                      refId="7"
+                      cachedDataType="wstr"
+                      cachedLength="100"
+                      cachedName="Geographic_Location"
+                      externalMetadataColumnId="7"
+                      lineageId="9" />
+                    <inputColumn
+                      refId="8"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="Device_Type"
+                      externalMetadataColumnId="8"
+                      lineageId="10" />
+                    <inputColumn
+                      refId="9"
+                      cachedDataType="wstr"
+                      cachedLength="10"
+                      cachedName="Preferred_Language"
+                      externalMetadataColumnId="9"
+                      lineageId="11" />
+                    <inputColumn
+                      refId="10"
+                      cachedDataType="nText"
+                      cachedName="Preferred_Genres"
+                      externalMetadataColumnId="10"
+                      lineageId="13" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="1"
+                      dataType="wstr"
+                      length="100"
+                      name="User_ID" />
+                    <externalMetadataColumn
+                      refId="2"
+                      dataType="wstr"
+                      length="50"
+                      name="Platform_Name" />
+                    <externalMetadataColumn
+                      refId="3"
+                      dataType="dbTimeStamp"
+                      name="Registration_Date" />
+                    <externalMetadataColumn
+                      refId="4"
+                      dataType="wstr"
+                      length="50"
+                      name="Subscription_Type" />
+                    <externalMetadataColumn
+                      refId="5"
+                      dataType="dbTimeStamp"
+                      name="Subscription_Start_Date" />
+                    <externalMetadataColumn
+                      refId="6"
+                      dataType="dbTimeStamp"
+                      name="Subscription_End_Date" />
+                    <externalMetadataColumn
+                      refId="7"
+                      dataType="wstr"
+                      length="100"
+                      name="Geographic_Location" />
+                    <externalMetadataColumn
+                      refId="8"
+                      dataType="wstr"
+                      length="50"
+                      name="Device_Type" />
+                    <externalMetadataColumn
+                      refId="9"
+                      dataType="wstr"
+                      length="10"
+                      name="Preferred_Language" />
+                    <externalMetadataColumn
+                      refId="10"
+                      dataType="nText"
+                      name="Preferred_Genres" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+            </component>
+          </components>
+          <paths>
+            <path
+              refId="1"
+              endId="2"
+              name="Platform User Data Output"
+              startId="1" />
+            <path
+              refId="2"
+              endId="3"
+              name="Audience Analytics Output"
+              startId="2" />
+          </paths>
+        </pipeline>
+      </DTS:ObjectData>
+    </DTS:Executable>
+  </DTS:Executables>
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[MediaEntertainmentDB]"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{G7H8I9J0-K1L2-3456-0123-789012345678}"
+      DTS:ObjectName="MediaEntertainmentDB">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager>
+          <DTS:Property
+            DTS:Name="ConnectionString">Data Source=@[$Project::DatabaseServer];Initial Catalog=@[$Project::DatabaseName];Provider=SQLNCLI11.1;Integrated Security=SSPI;Auto Translate=False;</DTS:Property>
+        </DTS:ConnectionManager>
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+</DTS:Executable>
